@@ -22,6 +22,6 @@ typedef struct shmseg
 void init_rand();
 long getrand();
 
-void wait_sem(int,int);
+void wait_sem(int,int); 
 void acq_sem(int,int);
 void lib_sem(int,int);
