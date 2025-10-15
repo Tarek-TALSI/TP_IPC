@@ -5,6 +5,7 @@
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <sys/sem.h>
+#include <string.h>
 
 static int shm_id=0;
 static int sem_id=0;
@@ -14,7 +15,7 @@ int result=0;
 long tab[maxval];
 
 
-long moyenne_client(long tab[]) {
+long result_client(long tab[]) {
     long somme = 0;
 
     for (int i = 0; i < maxval; i++) {
@@ -49,26 +50,38 @@ static void init_client(void){
 
 
 int main(){
+    int counter_failed = 0;
+    long local_tab[maxval];
     init_client(); //step 0
-    acq_sem(sem_id, seg_dispo); //step 1
-    seg->pid = getpid();
-    seg->req = ++req;
-    for (int i = 0; i < maxval; i++) seg->tab[i] = getrand();
-    acq_sem(sem_id, seg_init); //step 2
-    wait_sem(sem_id,res_ok); //step 3
-    lib_sem(sem_id,seg_init); //step 4
-    printf("results from servor is %ld\n",seg->result); 
-    wait_sem(sem_id,res_ok);
+    printf("intialisation done \r\n");
+    while(1){
+        acq_sem(sem_id, seg_dispo); //step 1
+        seg->pid = getpid();
+        seg->req = ++req;
+        for (int i = 0; i < maxval; i++) seg->tab[i] = getrand();
+        acq_sem(sem_id, seg_init); //step 2
+        wait_sem(sem_id,res_ok); //step 3
+        lib_sem(sem_id,seg_init); //step 4
+        //printf("results from servor is %ld\n",seg->result);
+        wait_sem(sem_id,res_ok);
+    
+        long local_result = seg->result;
+        memcpy(local_tab, seg->tab, sizeof(long) * maxval);
 
+        //6
+        lib_sem(sem_id,seg_dispo);
 
-    //6
-    lib_sem(sem_id,seg_dispo);
-
-    //7
-    printf("results from servor is %ld\n",seg->result);
-    printf("results from client is %ld\n",moyenne_client(seg->tab));
-
-    //8
-    //tqt ça boucle
+        //7
+        printf("%ld\r\n", local_result);
+        printf("%ld\r\n", result_client(local_tab));
+        if(local_result == result_client(local_tab)){
+        printf("TEST PASSED \r\n");
+        } else {
+            printf("TEST FAILED \r\n");
+            counter_failed++;
+        }
+        printf("number of test failed is : %d\r\n", counter_failed);
+        printf("----------------\r\n");
+    }
     return 0;
 }
