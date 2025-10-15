@@ -26,3 +26,5 @@ void lib_sem(int semid,int sem){
 
 }
 
+// (dans un bash) chmod +x segserv_2021
+// 
