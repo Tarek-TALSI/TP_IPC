@@ -54,6 +54,11 @@ int main(){
     long local_tab[maxval];
     init_client(); //step 0
     printf("intialisation done \r\n");
+    int n_clients = 5; 
+    for (int i = 0; i < n_clients - 1; i++) {
+        if (fork() == 0) break;
+    }
+
     while(1){
         acq_sem(sem_id, seg_dispo); //step 1
         seg->pid = getpid();
